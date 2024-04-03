@@ -42,14 +42,20 @@ const updateItem = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
+  console.log("Deleting item with ID:", itemId);
 
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
     .then((item) => {
-      res.status(204).send({});
+      res.status(200).send({});
     })
     .catch((err) => {
-      res.status(500).send({ message: "Error deleting item", err });
+      console.log(err.name);
+      if (err.name === "CastError") {
+        return res.status(400).send({ message: "Error deleting item", err });
+      }
+
+      res.status(404).send({ message: "Error deleting item", err });
     });
 };
 
