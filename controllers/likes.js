@@ -10,9 +10,7 @@ const likeItem = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    // .then((item) => {
-    //   res.status(200).send(item);
-    // })
+
     .then((item) => {
       // Check if item is not found
       if (!item) {
