@@ -3,6 +3,7 @@
 // It delegates the actual database operations to the model layer and focuses on request handling and response generation.
 
 const ClothingItem = require("../models/clothingItem");
+const { ERROR_CODES } = require("../utils/errors");
 
 // Create new item
 const createItem = (req, res) => {
@@ -14,7 +15,9 @@ const createItem = (req, res) => {
     })
     .catch((err) => {
       console.error(err.name);
-      res.status(400).send({ message: "Error creating item", err });
+      return res
+        .status(ERROR_CODES.BAD_REQUEST)
+        .send({ message: "Invalid data passed", error: err });
     });
 };
 
@@ -24,7 +27,9 @@ const getItems = (req, res) => {
     .then((items) => res.status(200).send(items))
     .catch((err) => {
       console.error(err.name);
-      res.status(500).send({ message: "Error getting items", err });
+      return res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server.", error: err });
     });
 };
 
@@ -38,10 +43,13 @@ const updateItem = (req, res) => {
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
       console.error(err.name);
-      res.status(500).send({ message: "Error updating item", err });
+      return res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server.", error: err });
     });
 };
 
+// Delete an item
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
   console.log("Deleting item with ID:", itemId);
@@ -54,10 +62,14 @@ const deleteItem = (req, res) => {
     .catch((err) => {
       console.log(err.name);
       if (err.name === "CastError") {
-        return res.status(400).send({ message: "Error deleting item", err });
+        return res
+          .status(ERROR_CODES.BAD_REQUEST)
+          .send({ message: "Invalid ID provided", error: err });
       }
 
-      res.status(404).send({ message: "Error deleting item", err });
+      return res
+        .status(ERROR_CODES.NOT_FOUND)
+        .send({ message: "Item not found", error: err });
     });
 };
 

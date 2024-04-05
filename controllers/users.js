@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const { ERROR_CODES } = require("../utils/errors");
 
 // Get all users
 const getUsers = (req, res) => {
@@ -6,7 +7,9 @@ const getUsers = (req, res) => {
     .then((users) => res.status(200).send(users))
     .catch((err) => {
       console.error(err.name);
-      return res.status(500).send({ message: "error from controllers/users" });
+      return res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server.", error: err });
     });
 };
 
@@ -18,16 +21,20 @@ const getUser = (req, res) => {
     .orFail()
     .then((user) => res.status(200).send(user))
     .catch((err) => {
-      console.log(err.name);
-
+      console.error(err.name);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send({ message: "User not found" });
+        return res
+          .status(ERROR_CODES.NOT_FOUND)
+          .send({ message: "User not found" });
       }
       if (err.name === "BSONError" || err.name === "CastError") {
-        return res.status(400).send({ message: "Invalid user ID" });
+        return res
+          .status(ERROR_CODES.BAD_REQUEST)
+          .send({ message: "Invalid user ID" });
       }
-
-      return res.status(500).send({ message: err.message });
+      return res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server.", error: err });
     });
 };
 
@@ -42,9 +49,13 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err.name);
       if (err.name === "ValidationError") {
-        return res.status(400).send({ message: err.message });
+        return res
+          .status(ERROR_CODES.BAD_REQUEST)
+          .send({ message: err.message });
       }
-      return res.status(500).send({ message: err.message });
+      return res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server.", error: err });
     });
 };
 
@@ -56,13 +67,17 @@ const updateUser = (req, res) => {
   User.findByIdAndUpdate(userId, { name, avatar }, { new: true })
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: "User not Found" });
+        return res
+          .status(ERROR_CODES.NOT_FOUND)
+          .send({ message: "User not Found" });
       }
       res.status(200).send(user);
     })
     .catch((err) => {
       console.error(err.name);
-      res.status(500).send({ message: "Error updating user", err });
+      res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "Error updating user", error: err });
     });
 };
 
@@ -73,13 +88,17 @@ const deleteUser = (req, res) => {
   User.findByIdAndDelete(userId)
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: "User not found" });
+        return res
+          .status(ERROR_CODES.NOT_FOUND)
+          .send({ message: "User not found" });
       }
       res.status(204).send();
     })
     .catch((err) => {
       console.error(err.name);
-      res.status(500).send({ message: "Error deleting user", err });
+      res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "Error deleting user", error: err });
     });
 };
 
