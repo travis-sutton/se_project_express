@@ -10,8 +10,16 @@ const likeItem = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    // .then((item) => {
+    //   res.status(200).send(item);
+    // })
     .then((item) => {
-      res.status(200).send(item);
+      // Check if item is not found
+      if (!item) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+      // If item is found, return it
+      return res.status(200).send(item);
     })
     .catch((err) => {
       console.error(err.name);
@@ -48,7 +56,7 @@ const dislikeItem = (req, res) => {
         return res.status(404).json({ message: "Item not found" });
       }
       // If item is found, return it
-      res.status(200).send(item);
+      return res.status(200).send(item);
     })
     .catch((err) => {
       console.error(err.name);

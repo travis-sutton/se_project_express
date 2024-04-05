@@ -71,11 +71,11 @@ const updateUser = (req, res) => {
           .status(ERROR_CODES.NOT_FOUND)
           .send({ message: "User not Found" });
       }
-      res.status(200).send(user);
+      return res.status(200).send(user);
     })
     .catch((err) => {
       console.error(err.name);
-      res
+      return res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
         .send({ message: "Error updating user", error: err });
     });
@@ -92,11 +92,11 @@ const deleteUser = (req, res) => {
           .status(ERROR_CODES.NOT_FOUND)
           .send({ message: "User not found" });
       }
-      res.status(204).send();
+      return res.status(204).send();
     })
     .catch((err) => {
       console.error(err.name);
-      res
+      return res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
         .send({ message: "Error deleting user", error: err });
     });
