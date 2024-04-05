@@ -17,7 +17,7 @@ const likeItem = (req, res) => {
       res.status(200).send(item);
     })
     .catch((err) => {
-      console.error("Error occurred:", err);
+      console.error(err.name);
       res.status(400).send({ message: "Server error", error: err });
     });
 };
@@ -37,9 +37,10 @@ const dislikeItem = (req, res) => {
       }
       res.status(200).send(item);
     })
-    .catch((err) =>
-      res.status(400).send({ message: "Error disliking item", error: err }),
-    );
+    .catch((err) => {
+      console.error(err.name);
+      res.status(400).send({ message: "Error disliking item", error: err });
+    });
 };
 
 module.exports = { likeItem, dislikeItem };

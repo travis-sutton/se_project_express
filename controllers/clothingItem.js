@@ -13,7 +13,7 @@ const createItem = (req, res) => {
       res.status(200).send({ data: item });
     })
     .catch((err) => {
-      console.error("Error creating item:", err.name);
+      console.error(err.name);
       res.status(400).send({ message: "Error creating item", err });
     });
 };
@@ -23,6 +23,7 @@ const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((err) => {
+      console.error(err.name);
       res.status(500).send({ message: "Error getting items", err });
     });
 };
@@ -36,6 +37,7 @@ const updateItem = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
+      console.error(err.name);
       res.status(500).send({ message: "Error updating item", err });
     });
 };

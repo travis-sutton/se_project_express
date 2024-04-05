@@ -5,7 +5,7 @@ const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send(users))
     .catch((err) => {
-      console.error(err);
+      console.error(err.name);
       return res.status(500).send({ message: "error from controllers/users" });
     });
 };
@@ -22,7 +22,8 @@ const getUser = (req, res) => {
 
       if (err.name === "DocumentNotFoundError") {
         return res.status(404).send({ message: "User not found" });
-      } if (err.name === "BSONError" || err.name === "CastError") {
+      }
+      if (err.name === "BSONError" || err.name === "CastError") {
         return res.status(400).send({ message: "Invalid user ID" });
       }
 
@@ -39,6 +40,7 @@ const createUser = (req, res) => {
       res.status(201).send(user);
     })
     .catch((err) => {
+      console.error(err.name);
       if (err.name === "ValidationError") {
         return res.status(400).send({ message: err.message });
       }
@@ -59,7 +61,7 @@ const updateUser = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      console.error(err);
+      console.error(err.name);
       res.status(500).send({ message: "Error updating user", err });
     });
 };
@@ -76,7 +78,7 @@ const deleteUser = (req, res) => {
       res.status(204).send();
     })
     .catch((err) => {
-      console.error(err);
+      console.error(err.name);
       res.status(500).send({ message: "Error deleting user", err });
     });
 };
