@@ -12,11 +12,11 @@ const likeItem = (req, res) => {
   )
 
     .then((item) => {
-      // Check if item is not found
       if (!item) {
-        return res.status(404).json({ message: "Item not found" });
+        return res
+          .status(ERROR_CODES.NOT_FOUND)
+          .json({ message: "Item not found" });
       }
-      // If item is found, return it
       return res.status(200).send(item);
     })
     .catch((err) => {
@@ -25,12 +25,6 @@ const likeItem = (req, res) => {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
           .send({ message: "Invalid item ID provided", error: err });
-      }
-
-      if (err.message.includes("Cast to ObjectId failed for value")) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .json({ message: "Item not found" });
       }
 
       return res
@@ -49,16 +43,15 @@ const dislikeItem = (req, res) => {
     { new: true },
   )
     .then((item) => {
-      // Check if item is not found
       if (!item) {
-        return res.status(404).json({ message: "Item not found" });
+        return res
+          .status(ERROR_CODES.NOT_FOUND)
+          .json({ message: "Item not found" });
       }
-      // If item is found, return it
       return res.status(200).send(item);
     })
     .catch((err) => {
       console.error(err.name);
-      // Handle other errors
       if (err.name === "CastError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)

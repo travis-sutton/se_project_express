@@ -59,47 +59,4 @@ const createUser = (req, res) => {
     });
 };
 
-// Update a user
-const updateUser = (req, res) => {
-  const { userId } = req.params;
-  const { name, avatar } = req.body;
-
-  User.findByIdAndUpdate(userId, { name, avatar }, { new: true })
-    .then((user) => {
-      if (!user) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: "User not Found" });
-      }
-      return res.status(200).send(user);
-    })
-    .catch((err) => {
-      console.error(err.name);
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "Error updating user", error: err });
-    });
-};
-
-// Delete a user
-const deleteUser = (req, res) => {
-  const { userId } = req.params;
-
-  User.findByIdAndDelete(userId)
-    .then((user) => {
-      if (!user) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: "User not found" });
-      }
-      return res.status(204).send();
-    })
-    .catch((err) => {
-      console.error(err.name);
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "Error deleting user", error: err });
-    });
-};
-
-module.exports = { getUsers, getUser, createUser, updateUser, deleteUser };
+module.exports = { getUsers, getUser, createUser, deleteUser };

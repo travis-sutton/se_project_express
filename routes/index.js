@@ -2,6 +2,8 @@
 // Routes are responsible for mapping HTTP request methods (GET, POST, PUT, DELETE, etc.) to specific controller functions.
 // They provide a clear and organized way to define the API endpoints exposed by the application.
 
+const { ERROR_CODES } = require("../utils/errors");
+
 // Main router
 const router = require("express").Router();
 
@@ -15,7 +17,7 @@ router.use("/users", userRouter);
 router.use("/items", likesRouter);
 
 router.use((req, res) => {
-  res.status(500).send({ message: "Route not found" });
+  res.status(ERROR_CODES.NOT_FOUND).send({ message: "Route not found" });
 });
 
 module.exports = router;
