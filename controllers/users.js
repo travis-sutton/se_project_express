@@ -59,4 +59,4 @@ const createUser = (req, res) => {
     });
 };
 
-module.exports = { getUsers, getUser, createUser, deleteUser };
+module.exports = { getUsers, getUser, createUser };

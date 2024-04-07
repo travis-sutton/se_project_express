@@ -19,11 +19,10 @@ const createItem = (req, res) => {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
           .send({ message: "Invalid data passed", error: err });
-      } else {
-        return res
-          .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-          .send({ message: "An error occurred", error: err });
       }
+      return res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "An error occurred", error: err });
     });
 };
 

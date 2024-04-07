@@ -2,10 +2,10 @@
 // Routes are responsible for mapping HTTP request methods (GET, POST, PUT, DELETE, etc.) to specific controller functions.
 // They provide a clear and organized way to define the API endpoints exposed by the application.
 
-const { ERROR_CODES } = require("../utils/errors");
-
 // Main router
 const router = require("express").Router();
+
+const { ERROR_CODES } = require("../utils/errors");
 
 // Specific routers
 const clothingItem = require("./clothingItem");
