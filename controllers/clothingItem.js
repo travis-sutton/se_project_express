@@ -7,6 +7,7 @@ const { ERROR_CODES } = require("../utils/errors");
 
 // Create new item
 const createItem = (req, res) => {
+  console.log(req);
   const { name, weather, imageUrl } = req.body;
 
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })

@@ -5,7 +5,11 @@
 // Main router
 const router = require("express").Router();
 
+// Error Codes
 const { ERROR_CODES } = require("../utils/errors");
+
+// Controllers
+const { createUser, login } = require("../controllers/users");
 
 // Specific routers
 const clothingItem = require("./clothingItem");
@@ -16,8 +20,32 @@ router.use("/items", clothingItem);
 router.use("/users", userRouter);
 router.use("/items", likesRouter);
 
+router.post("/signin", login);
+router.post("/signup", createUser);
+
 router.use((req, res) => {
   res.status(ERROR_CODES.NOT_FOUND).send({ message: "Route not found" });
 });
 
 module.exports = router;
+
+// // Main router
+// const router = require("express").Router();
+
+// // Error Codes
+// const { ERROR_CODES } = require("../utils/errors");
+
+// // Specific routers
+// const clothingItem = require("./clothingItem");
+// const userRouter = require("./users");
+// const likesRouter = require("./likes");
+
+// router.use("/items", clothingItem);
+// router.use("/users", userRouter);
+// router.use("/items", likesRouter);
+
+// router.use((req, res) => {
+//   res.status(ERROR_CODES.NOT_FOUND).send({ message: "Route not found" });
+// });
+
+// module.exports = router;
