@@ -56,24 +56,3 @@ userSchema.statics.findUserByCredentials = function (email, password) {
 };
 
 module.exports = mongoose.model("user", userSchema);
-
-// userSchema.statics.findUserByCredentials = function (email, password) {
-//   return this.findOne({ email })
-//     .then((user) => {
-//       if (!user) {
-//         return Promise.reject(new Error("Incorrect email or password"));
-//       }
-
-//       return bcrypt.compare(password, user.password).then((matched) => {
-//         if (!matched) {
-//           return Promise.reject(new Error("Incorrect email or password"));
-//         }
-
-//         return user; // now user is available
-//       });
-//     })
-//     .catch((err) => {
-//       console.error("Error during login:", err);
-//       throw new Error("An error occurred during login");
-//     });
-// };

@@ -22,12 +22,13 @@ const routes = require("./routes");
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: "660ee7cb7b31ec7abf7d7373", // temporary test user ID
-  };
-  next();
-});
+// Hardcode User Object
+// app.use((req, res, next) => {
+//   req.user = {
+//     _id: "660ee7cb7b31ec7abf7d7373", // temporary test user ID
+//   };
+//   next();
+// });
 
 app.use(routes);
 

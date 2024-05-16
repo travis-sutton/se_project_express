@@ -12,7 +12,7 @@ const extractBearerToken = (header) => {
 module.exports = function authorize(req, res, next) {
   const { authorization } = req.headers;
 
-  if (!authorization || !authorization.startsWith("Bearer ")) {
+  if (!authorization || !authorization.startsWith("Bearer")) {
     return handleAuthError(res);
   }
 

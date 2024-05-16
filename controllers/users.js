@@ -6,106 +6,31 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
 
-// const createUser = (req, res) => {
-//   if (!req.body.name || req.body.name.length < 2 || req.body.name.length > 30) {
-//     return res.status(400).send({
-//       message: "Name must be between 2 and 30 characters long",
-//     });
-//   }
-
-//   if (!req.body.email) {
-//     return res.status(400).send({
-//       message: "A Valid email is required",
-//     });
-//   }
-
-//   if (!validator.isURL(req.body.avatar)) {
-//     return res.status(400).send({ message: "Invalid avatar" });
-//   }
-
-//   if (!validator.isEmail(req.body.email)) {
-//     return res.status(400).send({ message: "Invalid email format" });
-//   }
-
-//   // Check if the email already exists
-//   User.findOne({ email: req.body.email })
-//     .then((existingUser) => {
-//       if (existingUser) {
-//         return res
-//           .status(409)
-//           .send({ message: "User with this email already exists" });
-//       }
-
-//       // Hash the password
-//       bcrypt
-//         .hash(req.body.password, 10)
-//         .then((hash) => {
-//           // Create the user with the hashed password
-//           User.create({
-//             email: req.body.email,
-//             password: hash,
-//             name: req.body.name,
-//             avatar: req.body.avatar,
-//           })
-//             .then((user) => {
-//               // Exclude password field from response
-//               const { password, ...userWithoutPassword } = user.toObject();
-
-//               // Send the user object without the password as response
-//               res.status(201).send(userWithoutPassword);
-//             })
-//             .catch((err) => {
-//               // Handle any errors during user creation
-//               if (err.code === 11000) {
-//                 res
-//                   .status(ERROR_CODES.BAD_REQUEST)
-//                   .send({ message: "Email already exists" });
-//               } else {
-//                 res.status(ERROR_CODES.INTERNAL_SERVER_ERROR).send({
-//                   message: "An error has occurred on the server.",
-//                   error: err,
-//                 });
-//               }
-//             });
-//         })
-//         .catch((err) => {
-//           // Handle any errors during password hashing
-//           res.status(ERROR_CODES.INTERNAL_SERVER_ERROR).send({
-//             message: "An error has occurred on the server.",
-//             error: err,
-//           });
-//         });
-//     })
-//     .catch((err) => {
-//       // Handle any errors during database query
-//       res.status(ERROR_CODES.INTERNAL_SERVER_ERROR).send({
-//         message: "An error has occurred on the server.",
-//         error: err,
-//       });
-//     });
-// };
-
 const createUser = (req, res) => {
   const { name, email, avatar, password } = req.body;
 
   if (!name || name.length < 2 || name.length > 30) {
-    return res.status(400).send({
+    return res.status(ERROR_CODES.BAD_REQUEST).send({
       message: "Name must be between 2 and 30 characters long",
     });
   }
 
   if (!email) {
-    return res.status(400).send({
+    return res.status(ERROR_CODES.BAD_REQUEST).send({
       message: "A Valid email is required",
     });
   }
 
   if (!validator.isURL(avatar)) {
-    return res.status(400).send({ message: "Invalid avatar" });
+    return res
+      .status(ERROR_CODES.BAD_REQUEST)
+      .send({ message: "Invalid avatar" });
   }
 
   if (!validator.isEmail(email)) {
-    return res.status(400).send({ message: "Invalid email format" });
+    return res
+      .status(ERROR_CODES.BAD_REQUEST)
+      .send({ message: "Invalid email format" });
   }
 
   // Check if the email already exists
@@ -113,7 +38,7 @@ const createUser = (req, res) => {
     .then((existingUser) => {
       if (existingUser) {
         return res
-          .status(409)
+          .status(ERROR_CODES.CONFLICT)
           .send({ message: "User with this email already exists" });
       }
 
@@ -121,7 +46,6 @@ const createUser = (req, res) => {
       bcrypt
         .hash(password, 10)
         .then((hash) => {
-          // Create the user with the hashed password
           User.create({
             email: email,
             password: hash,
@@ -132,11 +56,9 @@ const createUser = (req, res) => {
               // Exclude password field from response
               const { password, ...userWithoutPassword } = user.toObject();
 
-              // Send the user object without the password as response
               res.status(201).send(userWithoutPassword);
             })
             .catch((err) => {
-              // Handle any errors during user creation
               if (err.code === 11000) {
                 res
                   .status(ERROR_CODES.BAD_REQUEST)
@@ -150,7 +72,6 @@ const createUser = (req, res) => {
             });
         })
         .catch((err) => {
-          // Handle any errors during password hashing
           res.status(ERROR_CODES.INTERNAL_SERVER_ERROR).send({
             message: "An error has occurred on the server.",
             error: err,
@@ -158,7 +79,6 @@ const createUser = (req, res) => {
         });
     })
     .catch((err) => {
-      // Handle any errors during database query
       res.status(ERROR_CODES.INTERNAL_SERVER_ERROR).send({
         message: "An error has occurred on the server.",
         error: err,
@@ -169,16 +89,19 @@ const createUser = (req, res) => {
 const login = (req, res) => {
   const { email, password } = req.body;
 
-  // check if email or password are provided
   if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
+    return res
+      .status(ERROR_CODES.BAD_REQUEST)
+      .json({ message: "Email and password are required" });
   }
 
   // Authenticate user
   User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res
+          .status(ERROR_CODES.UNAUTHORIZED)
+          .json({ message: "Invalid email or password" });
       }
 
       // Create JWT token
@@ -190,21 +113,24 @@ const login = (req, res) => {
       res.status(200).json({ token });
     })
     .catch((err) => {
-      res.status(400).json({ message: "An error occurred during login" });
+      res
+        .status(ERROR_CODES.BAD_REQUEST)
+        .json({ message: "An error occurred during login" });
     });
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.params;
-
-  User.findById(userId)
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
         return res
           .stats(ERROR_CODES.BAD_REQUEST)
           .send({ message: "Invalid user ID" });
       }
-      res.status(200).send(user);
+
+      const { password, ...userWithoutPassword } = user.toObject();
+
+      res.status(200).send(userWithoutPassword);
     })
     .catch((err) => {
       console.log(err.name);
@@ -216,45 +142,40 @@ const getCurrentUser = (req, res) => {
     });
 };
 
-module.exports = { createUser, getCurrentUser, login };
+const updateUser = (req, res) => {
+  const userId = req.user._id;
+  const updates = req.body;
 
-// module.exports = { getUsers, getUser, createUser, login };
+  console.log("User ID:", userId);
+  console.log("Updates:", updates);
 
-// Old get user stuff
+  if (!userId) {
+    return res
+      .status(ERROR_CODES.BAD_REQUEST)
+      .send({ message: "Invalid User ID" });
+  }
 
-// // Get all users
-// const getUsers = (req, res) => {
-//   User.find({})
-//     .then((users) => res.status(200).send(users))
-//     .catch((err) => {
-//       console.error(err.name);
-//       return res
-//         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-//         .send({ message: "An error has occurred on the server.", error: err });
-//     });
-// };
+  User.findOneAndUpdate({ _id: userId }, updates, {
+    new: true,
+    runValidators: true,
+  })
+    .then((user) => {
+      console.log("Updated user:", user);
+      if (!user) {
+        return res
+          .status(ERROR_CODES.NOT_FOUND)
+          .send({ message: "User not found" });
+      }
+      // Exclude password field from response
+      const { password, ...userWithoutPassword } = user.toObject();
+      res.status(200).send(userWithoutPassword);
+    })
+    .catch((error) => {
+      console.error("Error updating user:", error);
+      res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "An error occurred during update" });
+    });
+};
 
-// // Get user by ID
-// const getUser = (req, res) => {
-//   const { userId } = req.params;
-
-//   User.findById(userId)
-//     .orFail()
-//     .then((user) => res.status(200).send(user))
-//     .catch((err) => {
-//       console.error(err.name);
-//       if (err.name === "DocumentNotFoundError") {
-//         return res
-//           .status(ERROR_CODES.NOT_FOUND)
-//           .send({ message: "User not found" });
-//       }
-//       if (err.name === "BSONError" || err.name === "CastError") {
-//         return res
-//           .status(ERROR_CODES.BAD_REQUEST)
-//           .send({ message: "Invalid user ID" });
-//       }
-//       return res
-//         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-//         .send({ message: "An error has occurred on the server.", error: err });
-//     });
-// };
+module.exports = { createUser, getCurrentUser, login, updateUser };

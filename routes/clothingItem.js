@@ -2,7 +2,6 @@
 
 const router = require("express").Router();
 
-// Import the controller function for creating and receiving clothing items
 const {
   createItem,
   getItems,
