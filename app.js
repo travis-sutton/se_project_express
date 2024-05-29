@@ -22,6 +22,12 @@ const routes = require("./routes");
 
 app.use(express.json());
 
+app.use(routes);
+
+app.listen(PORT, () => {
+  console.log(`App listening at port ${PORT}`);
+});
+
 // Hardcode User Object
 // app.use((req, res, next) => {
 //   req.user = {
@@ -29,9 +35,3 @@ app.use(express.json());
 //   };
 //   next();
 // });
-
-app.use(routes);
-
-app.listen(PORT, () => {
-  console.log(`App listening at port ${PORT}`);
-});

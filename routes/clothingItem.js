@@ -8,14 +8,18 @@ const {
   deleteItem,
 } = require("../controllers/clothingItem");
 
+const authorize = require("../middlewares/auth");
+
 // CRUD
 // CREATE
-router.post("/", createItem);
+
+// router.post("/", createItem);
+router.post("/", authorize, createItem);
 
 // Read
 router.get("/", getItems);
 
 // Delete
-router.delete("/:itemId", deleteItem);
+router.delete("/:itemId", authorize, deleteItem);
 
 module.exports = router;

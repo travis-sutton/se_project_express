@@ -4,6 +4,8 @@ const { ERROR_CODES } = require("../utils/errors");
 // Like an item
 const likeItem = (req, res) => {
   console.log("Request parameters:", req.params);
+  console.log("User ID:", req.user._id);
+
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     // add _id to the array if it's not there yet

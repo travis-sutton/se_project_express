@@ -7,8 +7,11 @@ const { ERROR_CODES } = require("../utils/errors");
 
 // Create new item
 const createItem = (req, res) => {
-  console.log(req);
   const { name, weather, imageUrl } = req.body;
+
+  if (!req.user || !req.user._id) {
+    return res.status(401).send({ message: "Authorization required" });
+  }
 
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
@@ -42,26 +45,48 @@ const getItems = (req, res) => {
 // Delete an item
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
-  console.log("Deleting item with ID:", itemId);
 
-  ClothingItem.findByIdAndDelete(itemId)
-    .orFail()
+  if (!req.user || !req.user._id) {
+    return res.status(401).send({ message: "Authorization required" });
+  }
 
+  ClothingItem.findById(itemId)
     .then((item) => {
-      console.log(item);
-      res.status(200).send({});
+      if (!item) {
+        return res
+          .status(ERROR_CODES.NOT_FOUND)
+          .send({ message: "Item not found" });
+      }
+
+      console.log(
+        `Item owner: ${item.owner.toString()}, Request user ID: ${req.user._id.toString()}`,
+      );
+
+      if (item.owner !== req.user._id) {
+        console.log(
+          `Forbidden: User ${req.user._id} does not own the item ${item._id}`,
+        );
+        return res.status(403).send({
+          message: "Forbidden: You do not have permission to delete this item",
+        });
+      }
+
+      return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
+        if (!deletedItem) {
+          return res
+            .status(ERROR_CODES.NOT_FOUND)
+            .send({ message: "Item not found" });
+        }
+
+        res.status(200).send({ message: "Item deleted successfully" });
+      });
     })
     .catch((err) => {
-      console.log(err.name);
+      console.error("Error:", err.name);
       if (err.name === "CastError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
           .send({ message: "Invalid ID provided", error: err });
-      }
-      if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: "Item not found", error: err });
       }
       return res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
