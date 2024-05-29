@@ -5,6 +5,7 @@
 
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const { PORT = 3001 } = process.env;
 const app = express();
@@ -20,6 +21,8 @@ mongoose
 
 const routes = require("./routes");
 
+app.use(cors());
+
 app.use(express.json());
 
 app.use(routes);
@@ -27,11 +30,3 @@ app.use(routes);
 app.listen(PORT, () => {
   console.log(`App listening at port ${PORT}`);
 });
-
-// Hardcode User Object
-// app.use((req, res, next) => {
-//   req.user = {
-//     _id: "660ee7cb7b31ec7abf7d7373", // temporary test user ID
-//   };
-//   next();
-// });
