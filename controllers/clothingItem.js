@@ -50,6 +50,9 @@ const deleteItem = (req, res) => {
           .send({ message: "Item not found" });
       }
 
+      console.log(`Item owner ID: ${item.owner}`);
+      console.log(`Request owner ID: ${req.user._id}`);
+
       if (String(item.owner) !== String(req.user._id)) {
         return res.status(ERROR_CODES.FORBIDDEN).send({
           message: "Forbidden: You do not have permission to delete this item",

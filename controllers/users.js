@@ -1,9 +1,9 @@
-const User = require("../models/user");
-const { ERROR_CODES } = require("../utils/errors");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 
 const jwt = require("jsonwebtoken");
+const { ERROR_CODES } = require("../utils/errors");
+const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 
 const createUser = (req, res) => {
@@ -28,7 +28,7 @@ const createUser = (req, res) => {
   }
 
   // Check if the email already exists
-  User.findOne({ email: email })
+  return User.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {
         return res
@@ -37,45 +37,42 @@ const createUser = (req, res) => {
       }
 
       // Hash the password
-      bcrypt
+      return bcrypt
         .hash(password, 10)
-        .then((hash) => {
+        .then((hash) =>
           User.create({
-            email: email,
+            email,
             password: hash,
-            name: name,
-            avatar: avatar,
-          })
-            .then((user) => {
-              // Exclude password field from response
-              const { password, ...userWithoutPassword } = user.toObject();
+            name,
+            avatar,
+          }),
+        )
+        .then((user) => {
+          // Ensure user is created
+          if (!user) {
+            return res
+              .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+              .send({ message: "User could not be created" });
+          }
 
-              res.status(201).send(userWithoutPassword);
-            })
-            .catch((err) => {
-              if (err.name === "ValidationError") {
-                res
-                  .status(ERROR_CODES.BAD_REQUEST)
-                  .send({ message: "Invalid data passed" });
-              } else if (err.code === 11000) {
-                res
-                  .status(ERROR_CODES.CONFLICT)
-                  .send({ message: "Email already exists" });
-              } else {
-                res
-                  .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-                  .send({ message: "An error has occurred on the server." });
-              }
-            });
-        })
-        .catch((err) => {
-          res
-            .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-            .send({ message: "An error has occurred on the server." });
+          // Exclude password field from response
+          const { password: hashedPassword, ...userWithoutPassword } =
+            user.toObject();
+          return res.status(201).send(userWithoutPassword);
         });
     })
     .catch((err) => {
-      res
+      if (err.name === "ValidationError") {
+        return res
+          .status(ERROR_CODES.BAD_REQUEST)
+          .send({ message: "Invalid data passed" });
+      }
+      if (err.code === 11000) {
+        return res
+          .status(ERROR_CODES.CONFLICT)
+          .send({ message: "Email already exists" });
+      }
+      return res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server." });
     });
@@ -91,7 +88,7 @@ const login = (req, res) => {
   }
 
   // Authenticate user
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       // Create JWT token
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
@@ -99,18 +96,17 @@ const login = (req, res) => {
       });
 
       // Send token to client
-      res.status(200).json({ token });
+      return res.status(200).json({ token });
     })
     .catch((err) => {
       if (err.message === "An error occurred during login") {
-        res
+        return res
           .status(ERROR_CODES.UNAUTHORIZED)
           .json({ message: "Invalid email or password" });
-      } else {
-        res
-          .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-          .json({ message: "An error occurred during login" });
       }
+      return res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .json({ message: "An error occurred during login" });
     });
 };
 
@@ -125,7 +121,7 @@ const getCurrentUser = (req, res) => {
 
       const { password, ...userWithoutPassword } = user.toObject();
 
-      res.status(200).send(userWithoutPassword);
+      return res.status(200).send(userWithoutPassword);
     })
     .catch((err) => {
       console.log(err.name);
@@ -134,7 +130,7 @@ const getCurrentUser = (req, res) => {
           .status(ERROR_CODES.BAD_REQUEST)
           .send({ message: "An error has occured on the server." });
       }
-      res
+      return res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server." });
     });
@@ -160,7 +156,7 @@ const updateUser = (req, res) => {
       }
       // Exclude password field from response
       const { password, ...userWithoutPassword } = user.toObject();
-      res.status(200).send(userWithoutPassword);
+      return res.status(200).send(userWithoutPassword);
     })
     .catch((error) => {
       console.error("Error updating user:", error);
@@ -169,7 +165,7 @@ const updateUser = (req, res) => {
           .status(ERROR_CODES.BAD_REQUEST)
           .send({ message: "Invalid data passed" });
       }
-      res
+      return res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
         .send({ message: "An error occurred during update" });
     });

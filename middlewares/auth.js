@@ -6,9 +6,7 @@ const handleAuthError = (res) => {
   res.status(ERROR_CODES.UNAUTHORIZED).send({ message: "Authorization Error" });
 };
 
-const extractBearerToken = (header) => {
-  return header.replace("Bearer ", "");
-};
+const extractBearerToken = (header) => header.replace("Bearer ", "");
 
 module.exports = function authorize(req, res, next) {
   const { authorization } = req.headers;
@@ -23,7 +21,7 @@ module.exports = function authorize(req, res, next) {
   try {
     payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
-    next();
+    return next();
   } catch (err) {
     return handleAuthError(res);
   }
