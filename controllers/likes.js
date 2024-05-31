@@ -26,12 +26,12 @@ const likeItem = (req, res) => {
       if (err.name === "CastError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid item ID provided", error: err });
+          .send({ message: "Invalid item ID provided" });
       }
 
       return res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server.", error: err });
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -57,11 +57,11 @@ const dislikeItem = (req, res) => {
       if (err.name === "CastError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid item ID provided", error: err });
+          .send({ message: "Invalid item ID provided" });
       }
       return res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server.", error: err });
+        .send({ message: "An error has occurred on the server." });
     });
 };
 

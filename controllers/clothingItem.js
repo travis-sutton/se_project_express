@@ -9,10 +9,6 @@ const { ERROR_CODES } = require("../utils/errors");
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
-  if (!req.user || !req.user._id) {
-    return res.status(401).send({ message: "Authorization required" });
-  }
-
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       res.status(200).send({ data: item });
@@ -22,11 +18,11 @@ const createItem = (req, res) => {
       if (err.name === "ValidationError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid data passed", error: err });
+          .send({ message: "Invalid data passed" });
       }
       return res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error occurred", error: err });
+        .send({ message: "An error occurred" });
     });
 };
 
@@ -38,17 +34,13 @@ const getItems = (req, res) => {
       console.error(err.name);
       return res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server.", error: err });
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
 // Delete an item
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
-
-  if (!req.user || !req.user._id) {
-    return res.status(401).send({ message: "Authorization required" });
-  }
 
   ClothingItem.findById(itemId)
     .then((item) => {
@@ -58,15 +50,8 @@ const deleteItem = (req, res) => {
           .send({ message: "Item not found" });
       }
 
-      console.log(
-        `Item owner: ${item.owner.toString()}, Request user ID: ${req.user._id.toString()}`,
-      );
-
-      if (item.owner !== req.user._id) {
-        console.log(
-          `Forbidden: User ${req.user._id} does not own the item ${item._id}`,
-        );
-        return res.status(403).send({
+      if (String(item.owner) !== String(req.user._id)) {
+        return res.status(ERROR_CODES.FORBIDDEN).send({
           message: "Forbidden: You do not have permission to delete this item",
         });
       }
@@ -77,12 +62,10 @@ const deleteItem = (req, res) => {
             .status(ERROR_CODES.NOT_FOUND)
             .send({ message: "Item not found" });
         }
-
-        res.status(200).send({ message: "Item deleted successfully" });
+        return res.status(200).send({ message: "Item deleted successfully" });
       });
     })
     .catch((err) => {
-      console.error("Error:", err.name);
       if (err.name === "CastError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
@@ -93,6 +76,53 @@ const deleteItem = (req, res) => {
         .send({ message: "An error occurred", error: err });
     });
 };
+
+// const deleteItem = (req, res) => {
+//   const { itemId } = req.params;
+
+//   ClothingItem.findById(itemId)
+//     .then((item) => {
+//       if (!item) {
+//         return res
+//           .status(ERROR_CODES.NOT_FOUND)
+//           .send({ message: "Item not found" });
+//       }
+
+//       console.log(
+//         `Item owner: ${item.owner.toString()}, Request user ID: ${req.user._id.toString()}`,
+//       );
+
+//       if (item.owner !== req.user._id) {
+//         console.log(
+//           `Forbidden: User ${req.user._id} does not own the item ${item._id}`,
+//         );
+//         return res.status(ERROR_CODES.FORBIDDEN).send({
+//           message: "Forbidden: You do not have permission to delete this item",
+//         });
+//       }
+
+//       return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
+//         if (!deletedItem) {
+//           return res
+//             .status(ERROR_CODES.NOT_FOUND)
+//             .send({ message: "Item not found" });
+//         }
+//         res.status(200).send({ message: "Item deleted successfully" });
+//       });
+//     })
+
+//     .catch((err) => {
+//       console.error("Error:", err.name);
+//       if (err.name === "CastError") {
+//         return res
+//           .status(ERROR_CODES.BAD_REQUEST)
+//           .send({ message: "Invalid ID provided", error: err });
+//       }
+//       return res
+//         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+//         .send({ message: "An error occurred", error: err });
+//     });
+// };
 
 module.exports = {
   createItem,

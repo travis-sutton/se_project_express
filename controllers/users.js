@@ -9,12 +9,6 @@ const { JWT_SECRET } = require("../utils/config");
 const createUser = (req, res) => {
   const { name, email, avatar, password } = req.body;
 
-  if (!name || name.length < 2 || name.length > 30) {
-    return res.status(ERROR_CODES.BAD_REQUEST).send({
-      message: "Name must be between 2 and 30 characters long",
-    });
-  }
-
   if (!email) {
     return res.status(ERROR_CODES.BAD_REQUEST).send({
       message: "A Valid email is required",
@@ -59,30 +53,31 @@ const createUser = (req, res) => {
               res.status(201).send(userWithoutPassword);
             })
             .catch((err) => {
-              if (err.code === 11000) {
+              if (err.name === "ValidationError") {
                 res
                   .status(ERROR_CODES.BAD_REQUEST)
+                  .send({ message: "Invalid data passed" });
+              } else if (err.code === 11000) {
+                res
+                  .status(ERROR_CODES.CONFLICT)
                   .send({ message: "Email already exists" });
               } else {
-                res.status(ERROR_CODES.INTERNAL_SERVER_ERROR).send({
-                  message: "An error has occurred on the server.",
-                  error: err,
-                });
+                res
+                  .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+                  .send({ message: "An error has occurred on the server." });
               }
             });
         })
         .catch((err) => {
-          res.status(ERROR_CODES.INTERNAL_SERVER_ERROR).send({
-            message: "An error has occurred on the server.",
-            error: err,
-          });
+          res
+            .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+            .send({ message: "An error has occurred on the server." });
         });
     })
     .catch((err) => {
-      res.status(ERROR_CODES.INTERNAL_SERVER_ERROR).send({
-        message: "An error has occurred on the server.",
-        error: err,
-      });
+      res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -98,12 +93,6 @@ const login = (req, res) => {
   // Authenticate user
   User.findUserByCredentials(email, password)
     .then((user) => {
-      if (!user) {
-        return res
-          .status(ERROR_CODES.UNAUTHORIZED)
-          .json({ message: "Invalid email or password" });
-      }
-
       // Create JWT token
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
@@ -113,9 +102,15 @@ const login = (req, res) => {
       res.status(200).json({ token });
     })
     .catch((err) => {
-      res
-        .status(ERROR_CODES.BAD_REQUEST)
-        .json({ message: "An error occurred during login" });
+      if (err.message === "An error occurred during login") {
+        res
+          .status(ERROR_CODES.UNAUTHORIZED)
+          .json({ message: "Invalid email or password" });
+      } else {
+        res
+          .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+          .json({ message: "An error occurred during login" });
+      }
     });
 };
 
@@ -124,7 +119,7 @@ const getCurrentUser = (req, res) => {
     .then((user) => {
       if (!user) {
         return res
-          .stats(ERROR_CODES.BAD_REQUEST)
+          .stats(ERROR_CODES.NOT_FOUND)
           .send({ message: "Invalid user ID" });
       }
 
@@ -137,8 +132,11 @@ const getCurrentUser = (req, res) => {
       if (err.name === "CastError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "An error has occured on the server.", err });
+          .send({ message: "An error has occured on the server." });
       }
+      res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -148,12 +146,6 @@ const updateUser = (req, res) => {
 
   console.log("User ID:", userId);
   console.log("Updates:", updates);
-
-  if (!userId) {
-    return res
-      .status(ERROR_CODES.BAD_REQUEST)
-      .send({ message: "Invalid User ID" });
-  }
 
   User.findOneAndUpdate({ _id: userId }, updates, {
     new: true,
@@ -172,6 +164,11 @@ const updateUser = (req, res) => {
     })
     .catch((error) => {
       console.error("Error updating user:", error);
+      if (error.name === "ValidationError") {
+        return res
+          .status(ERROR_CODES.BAD_REQUEST)
+          .send({ message: "Invalid data passed" });
+      }
       res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
         .send({ message: "An error occurred during update" });
