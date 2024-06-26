@@ -80,53 +80,6 @@ const deleteItem = (req, res) => {
     });
 };
 
-// const deleteItem = (req, res) => {
-//   const { itemId } = req.params;
-
-//   ClothingItem.findById(itemId)
-//     .then((item) => {
-//       if (!item) {
-//         return res
-//           .status(ERROR_CODES.NOT_FOUND)
-//           .send({ message: "Item not found" });
-//       }
-
-//       console.log(
-//         `Item owner: ${item.owner.toString()}, Request user ID: ${req.user._id.toString()}`,
-//       );
-
-//       if (item.owner !== req.user._id) {
-//         console.log(
-//           `Forbidden: User ${req.user._id} does not own the item ${item._id}`,
-//         );
-//         return res.status(ERROR_CODES.FORBIDDEN).send({
-//           message: "Forbidden: You do not have permission to delete this item",
-//         });
-//       }
-
-//       return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
-//         if (!deletedItem) {
-//           return res
-//             .status(ERROR_CODES.NOT_FOUND)
-//             .send({ message: "Item not found" });
-//         }
-//         res.status(200).send({ message: "Item deleted successfully" });
-//       });
-//     })
-
-//     .catch((err) => {
-//       console.error("Error:", err.name);
-//       if (err.name === "CastError") {
-//         return res
-//           .status(ERROR_CODES.BAD_REQUEST)
-//           .send({ message: "Invalid ID provided", error: err });
-//       }
-//       return res
-//         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-//         .send({ message: "An error occurred", error: err });
-//     });
-// };
-
 module.exports = {
   createItem,
   getItems,
